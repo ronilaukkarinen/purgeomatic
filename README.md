@@ -29,6 +29,7 @@ The delete is accomplished by it looking up the item using Radarr/Sonarr's API. 
  - Radarr (if deleting movies)
  - Sonarr (if deleting TV)
  - Overseerr (optional: the script will work without an overseer configuration)
+ - Transmission-daemon (optional: the script will work without transmission configuration)
 
 *Please note:* these scripts rely on Plex's metadata to supply TMDB/TVDB IDs. **Please take a moment to refresh the metadata in your Plex libraries before running them.**
 

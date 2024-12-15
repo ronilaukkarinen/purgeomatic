@@ -29,6 +29,7 @@ class Config:
         self.transmissionRemotePass = os.getenv("TRANSMISSION_REMOTE_PASSWORD")
         self.transmissionRemotePath = os.getenv("TRANSMISSION_RPC_PATH")
         self.sonarrProtectedTags = os.getenv("SONARR_PROTECTED_TAGS")
+        self.excludedTrackers = [t.strip() for t in os.getenv("EXCLUDED_TRACKERS", "").split(",") if t.strip()]
         if self.dryrun:
             print("DRY_RUN enabled!")
 
@@ -103,3 +104,17 @@ class Config:
         except Exception as e:
             return f"ERROR: Connection failure when attempting to contact your Overseerr API. Please double-check your connection string/API key and try again. Error raised:\n\t{e}"
         return None
+
+    def check_trackers(self, transmissionRemoteClient, torrent_id):
+        """Check if torrent has any excluded trackers"""
+        try:
+            torrent = transmissionRemoteClient.get_torrent(torrent_id)
+            trackers = [t['announce'] for t in torrent.trackers]
+
+            for excluded in self.excludedTrackers:
+                if any(excluded.lower() in tracker.lower() for tracker in trackers):
+                    return True
+            return False
+        except Exception as e:
+            print(f"WARNING: Error checking trackers: {str(e)}")
+            return False

@@ -3,19 +3,44 @@
 
 ![Python](https://img.shields.io/badge/python-3.10%20|%203.11-blue) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-**This version has a support for transmission-daemon.**
+**This fork has a extra features, for example automatic deletion of torrents from transmission-daemon.** The maintainer of [the original project ASK-ME-ABOUT-LOOM/purgeomatic](https://github.com/ASK-ME-ABOUT-LOOM/purgeomatic) did not wish to add these features.
 
-## Introduction
+## Features
 
-### Features
-
+ - **Automatic deletion of torrents from transmission-daemon (this fork only!)**
+ - **Exclude torrents from deletion based on tracker name (this fork only!)**
  - Compatible with cron
  - Delete unwatched movies & tv series
  - Delete a single movie from Radarr/Tautulli/Overseerr using delete.movie.py
  - Supports a 'dry run' mode so you can test it
  - Supports a whitelist of content that should never be deleted using TMDB/TVDB IDs in the `protected` file
 
-### Summary
+## Example runner script
+
+```bash
+#!/bin/bash
+# /path/to/purgeomatic_cron
+# Run pyenv
+. /path/to/.profile
+
+# Variables
+PURGEOMATIC_PATH=/path/to/purgeomatic
+PURGEOMATIC_LOG=/path/to/purgeomatic/purgeomatic.log
+
+# Ensure dry run is always off...
+sed -i 's/DRY_RUN=on/#DRY_RUN=on/g' $PURGEOMATIC_PATH/.env
+cd $PURGEOMATIC_PATH && python3.8 delete.movies.unwatched.py
+cd $PURGEOMATIC_PATH && python3.8 delete.tv.unwatched.py
+```
+
+## Example cronjob
+
+```bash
+# Clean up every night at 3am
+0 3 * * * /bin/sh /path/to/purgeomatic_cron >/dev/null 2>&1
+```
+
+## Summary
 
 I could never get the [JBOPS scripts](https://github.com/blacktwin/JBOPS) to work, and disk utilization has been a problem that crops up every few months for several years running, so I finally sat down and wrote my own script. It relies on being able to access an API for tautulli/radarr/sonarr, and it will also delete the media entry from overseerr if you use it.
 

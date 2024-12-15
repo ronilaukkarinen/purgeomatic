@@ -98,12 +98,12 @@ def purge(movie):
         try:
             if c.transmissionRpcHost is not None:
                 transmissionRemoteClient = Client(
-                  protocol=str(c.transmissionRpcProtocol),
-                  username=str(c.transmissionRemoteUser),
-                  password=str(c.transmissionRemotePass),
-                  host=str(c.transmissionRpcHost),
-                  port=str(c.transmissionRpcPort),
-                  path=str(c.transmissionRemotePath)
+                    protocol=str(c.transmissionRpcProtocol),
+                    username=str(c.transmissionRemoteUser),
+                    password=str(c.transmissionRemotePass),
+                    host=str(c.transmissionRpcHost),
+                    port=str(c.transmissionRpcPort),
+                    path=str(c.transmissionRemotePath)
                 )
 
                 torrents = transmissionRemoteClient.get_torrents()
@@ -115,15 +115,21 @@ def purge(movie):
                     torrentlist.append(torrent.id)
 
                 if radarr["movieFile"]["sceneName"] in torrentlist:
-                  print("Torrent match found: " + radarr["movieFile"]["sceneName"])
+                    print("Torrent match found: " + radarr["movieFile"]["sceneName"])
+                    torrent_id = torrentlist[torrentlist.index(radarr["movieFile"]["sceneName"])+1]
 
-                  # Print torrent info by its ID
-                  torrent = transmissionRemoteClient.get_torrent(torrentlist[torrentlist.index(radarr["movieFile"]["sceneName"])+1])
-                  print("Torrent ID: " + str(torrent.id))
+                    # Check if torrent has excluded trackers
+                    if check_trackers(transmissionRemoteClient, torrent_id):
+                        print(f"WARNING: Skipping deletion due to protected tracker: {radarr['movieFile']['sceneName']}")
+                        return 0
 
-                if not c.dryrun:
-                  print("Removing torrent and its data: " + radarr["movieFile"]["sceneName"])
-                  transmissionRemoteClient.remove_torrent(torrent.id, delete_data=True)
+                    # Print torrent info by its ID
+                    torrent = transmissionRemoteClient.get_torrent(torrent_id)
+                    print("Torrent ID: " + str(torrent.id))
+
+                    if not c.dryrun:
+                        print("Removing torrent and its data: " + radarr["movieFile"]["sceneName"])
+                        transmissionRemoteClient.remove_torrent(torrent.id, delete_data=True)
 
         except Exception as e:
             #print("ERROR: " + str(e))
